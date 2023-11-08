@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -18,6 +18,7 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+
 
 class SearchProblem:
     """
@@ -68,11 +69,41 @@ def tinyMazeSearch(problem):
     sequence of moves will be incorrect, so only use this for tinyMaze.
     """
     from game import Directions
+
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
 
-def depthFirstSearch(problem):
+
+class Node:
+    """
+    node struct in the search tree
+    """
+
+    def __init__(self, state, parent, action, path_cost):
+        self.state = state
+        self.parent: Node = parent
+        self.action = action
+        self.path_cost = path_cost
+
+    def __repr__(self):
+        if self.parent:
+            return f"Node({self.state}, {self.parent.state}, {self.action}, {self.path_cost})"
+        else:
+            return f"Node({self.state}, {None}, {None}, {self.path_cost})"
+
+
+def traceBackNode(node: Node):
+    actions = []
+    while node.parent is not None:
+        actions.append(node.action)
+        node = node.parent
+    actions.reverse()
+    print(f"actions: {actions}")
+    return actions
+
+
+def depthFirstSearch(problem: SearchProblem):
     """
     Search the deepest nodes in the search tree first.
 
@@ -86,18 +117,33 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    reached_states = set()
+    frontier = util.Stack()
+    frontier.push(Node(problem.getStartState(), None, None, 0))
+
+    while not frontier.isEmpty():
+        node: Node = frontier.pop()
+        # print(node)
+        if problem.isGoalState(node.state):
+            return traceBackNode(node)
+        if node.state not in reached_states:
+            reached_states.add(node.state)
+            for s, a, c in problem.getSuccessors(node.state):
+                frontier.push(Node(s, node, a, node.path_cost + c))
+    return []
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
 
+
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -105,6 +151,7 @@ def nullHeuristic(state, problem=None):
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
+
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
