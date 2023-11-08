@@ -197,7 +197,7 @@ class Linear(FunctionNode):
     Inputs:
         features: a Node with shape (batch_size x input_features)
         weights: a Node with shape (input_features x output_features)
-    Output: a node with shape (batch_size x input_features)
+    Output: a node with shape (batch_size x input_features)??
     """
     @staticmethod
     def _forward(*inputs):
