@@ -850,6 +850,8 @@ if __name__ == "__main__":
     > python pacman.py --help
     """
     # sys.argv = ['pacman.py', '-l', 'tinyMaze', '-p', 'SearchAgent']
+    # sys.argv = ['pacman.py', '-l', 'testSearch', '-p', 'AStarFoodSearchAgent']
+    sys.argv = ['pacman.py', '-l', 'trickySearch', '-p', 'AStarFoodSearchAgent']
     args = readCommand(sys.argv[1:])  # Get game components based on input
     runGames(**args)
 

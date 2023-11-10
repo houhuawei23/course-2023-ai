@@ -541,7 +541,7 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchType = FoodSearchProblem
 
 
-def foodHeuristic(state, problem):
+def foodHeuristic(state, problem: FoodSearchProblem):
     """
     Your heuristic for the FoodSearchProblem goes here.
 
@@ -571,7 +571,21 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    height, width = len(foodGrid.data), len(foodGrid.data[0])
+    
+    res = 0
+    preFoodPos = (1, 1)
+    first_flag = False
+    for i in range(1, height):
+        for j in range(1, width):
+            # print(f"(i,j): {(i, j)}")
+            if foodGrid[i][j] is True:
+                if first_flag is False:
+                    first_flag = True
+                    preFoodPos = (i, j)
+                    continue
+                res += util.manhattanDistance(preFoodPos, (i, j))
+    return res
 
 
 class ClosestDotSearchAgent(SearchAgent):
