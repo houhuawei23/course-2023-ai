@@ -99,7 +99,7 @@ def traceBackNode(node: Node):
         actions.append(node.action)
         node = node.parent
     actions.reverse()
-    print(f"actions: {actions}")
+    # print(f"actions: {actions}")
     return actions
 
 
@@ -133,16 +133,43 @@ def depthFirstSearch(problem: SearchProblem):
     return []
 
 
-def breadthFirstSearch(problem):
+def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    reached_states = set()
+    frontier = util.Queue()
+    frontier.push(Node(problem.getStartState(), None, None, 0))
+
+    while not frontier.isEmpty():
+        node: Node = frontier.pop()
+        # print(node)
+        if problem.isGoalState(node.state):
+            return traceBackNode(node)
+        # print(f"type: {type(node.state)}")
+        if node.state not in reached_states:
+            reached_states.add(node.state)
+            for s, a, c in problem.getSuccessors(node.state):
+                frontier.push(Node(s, node, a, node.path_cost + c))
+    return []
 
 
-def uniformCostSearch(problem):
+def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    reached_states = set()
+    frontier = util.PriorityQueue()
+    frontier.push(Node(problem.getStartState(), None, None, 0), 0)
+
+    while not frontier.isEmpty():
+        node: Node = frontier.pop()
+        # print(node)
+        if problem.isGoalState(node.state):
+            return traceBackNode(node)
+        if node.state not in reached_states:
+            reached_states.add(node.state)
+            for s, a, c in problem.getSuccessors(node.state):
+                frontier.push(Node(s, node, a, node.path_cost + c), node.path_cost + c)
+    return []
 
 
 def nullHeuristic(state, problem=None):
@@ -150,13 +177,46 @@ def nullHeuristic(state, problem=None):
     A heuristic function estimates the cost from the current state to the nearest
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
+
     return 0
 
 
-def aStarSearch(problem, heuristic=nullHeuristic):
+# from searchAgents import PositionSearchProblem
+
+
+# def heuristic_1(state, problem: PositionSearchProblem = None):
+#     return util.manhattanDistance(state, problem.goal)
+
+
+def heuristic_1(state, problem=None):
+    return util.manhattanDistance(state, problem.goal)
+
+
+# def f(problem:SearchProblem, node: Node, h=nullHeuristic):
+#     return node.path_cost + h(node.state,)
+
+
+def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    reached_states = set()
+    frontier = util.PriorityQueue()
+    node: Node = Node(problem.getStartState(), None, None, 0)
+    frontier.push(node, node.path_cost + heuristic(node.state, problem))
+
+    while not frontier.isEmpty():
+        node: Node = frontier.pop()
+        # print(node)
+        if problem.isGoalState(node.state):
+            return traceBackNode(node)
+        if node.state not in reached_states:
+            reached_states.add(node.state)
+            for s, a, c in problem.getSuccessors(node.state):
+                newnode = Node(s, node, a, node.path_cost + c)
+                frontier.push(
+                    newnode, newnode.path_cost + heuristic(newnode.state, problem)
+                )
+    return []
 
 
 # Abbreviations

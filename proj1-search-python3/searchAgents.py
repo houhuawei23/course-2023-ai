@@ -313,6 +313,10 @@ def euclideanHeuristic(position, problem, info={}):
 # This portion is incomplete.  Time to write code!  #
 #####################################################
 
+from collections import namedtuple
+
+CornersState = namedtuple("ConrnersState", ["pos", "reached"])
+
 
 class CornersProblem(search.SearchProblem):
     """
@@ -336,6 +340,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        self.start_state = CornersState(self.startingPosition, 0b0000)
 
     def getStartState(self):
         """
@@ -343,16 +348,23 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.start_state
 
-    def isGoalState(self, state):
+    def isGoalState(self, state: CornersState):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # for corner in self.corners:
+        #     # if
+        #     pass
 
-    def getSuccessors(self, state):
+        if state.reached != 0b1111:
+            return False
+        return True
+        # util.raiseNotDefined()
+
+    def getSuccessors(self, state: CornersState):
         """
         Returns successor states, the actions they require, and a cost of 1.
 
@@ -378,7 +390,21 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
-
+            x, y = state.pos
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            if not self.walls[nextx][nexty]:
+                reached = state.reached
+                try:
+                    idx = self.corners.index(state.pos)
+                except:
+                    idx = -1
+                if idx != -1:
+                    reached = reached | (1 << idx)
+                next_state = CornersState((nextx, nexty), reached)
+                # cost = self.costFn(nextState)
+                cost = 1
+                successors.append((next_state, action, cost))
         self._expanded += 1  # DO NOT CHANGE
         return successors
 
@@ -398,7 +424,15 @@ class CornersProblem(search.SearchProblem):
         return len(actions)
 
 
-def cornersHeuristic(state, problem):
+def getUnreachedCornerIndices(reached):
+    indices = []
+    for i in range(4):
+        if (reached % (1 << (i + 1))) >> i == 0:
+            indices.append(i)
+    return indices
+
+
+def cornersHeuristic(state: CornersState, problem: CornersProblem):
     """
     A heuristic for the CornersProblem that you defined.
 
@@ -415,7 +449,20 @@ def cornersHeuristic(state, problem):
     walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0  # Default to trivial solution
+    res = 0
+    indices = getUnreachedCornerIndices(state.reached)
+    for idx in indices:
+        res += util.manhattanDistance(state.pos, corners[idx])
+
+    # res += util.manhattanDistance(state.pos, corners[0])
+    # for i in range(len(indices)):
+    #     if i + 1 >= len(indices):
+    #         break
+
+    #     res += util.manhattanDistance(corners[indices[i]], corners[indices[i + 1]])
+
+    # print(f"res: {res}")
+    return res  # Default to trivial solution
 
 
 class AStarCornersAgent(SearchAgent):
