@@ -851,7 +851,20 @@ if __name__ == "__main__":
     """
     # sys.argv = ['pacman.py', '-l', 'tinyMaze', '-p', 'SearchAgent']
     # sys.argv = ['pacman.py', '-l', 'testSearch', '-p', 'AStarFoodSearchAgent']
-    sys.argv = ['pacman.py', '-l', 'trickySearch', '-p', 'AStarFoodSearchAgent']
+    # sys.argv = ['pacman.py', '-l', 'trickySearch', '-p', 'AStarFoodSearchAgent']
+    # sys.argv = ["pacman.py", "-l", "bigSearch", "-p", "ClosestDotSearchAgent", "-z", ".5"]
+    # sys.argv = [
+    #     "pacman.py",
+    #     "-l",
+    #     "tinyCorners",
+    #     "-p",
+    #     "SearchAgent",
+    #     "-a",
+    #     "fn=bfs,prob=CornersProblem",
+    #     "--frameTime",
+    #     "0.5",
+    # ]  # q5
+    # sys.argv = ["pacman.py", "-l", "mediumMaze", "-p", "SearchAgent", "-a", "fn=bfs"]
     args = readCommand(sys.argv[1:])  # Get game components based on input
     runGames(**args)
 

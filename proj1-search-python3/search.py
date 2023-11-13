@@ -136,20 +136,20 @@ def depthFirstSearch(problem: SearchProblem):
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    reached_states = set()
+    reached_states = []
     frontier = util.Queue()
     frontier.push(Node(problem.getStartState(), None, None, 0))
 
+
     while not frontier.isEmpty():
         node: Node = frontier.pop()
-        # print(node)
         if problem.isGoalState(node.state):
             return traceBackNode(node)
-        # print(f"type: {type(node.state)}")
         if node.state not in reached_states:
-            reached_states.add(node.state)
+            reached_states.append(node.state)
             for s, a, c in problem.getSuccessors(node.state):
-                frontier.push(Node(s, node, a, node.path_cost + c))
+                new_node = Node(s, node, a, node.path_cost + c)
+                frontier.push(new_node)
     return []
 
 
