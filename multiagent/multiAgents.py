@@ -203,7 +203,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return self.min_value(gameState, agentIndex, depth)
 
     def max_value(self, gameState: GameState, agentIndex: int, depth: int):
-        max = -1e9
+        max_val = -1e9
         action = Directions.STOP
 
         next_agent_index = agentIndex + 1
@@ -211,13 +211,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
         for legal_action in gameState.getLegalActions(agentIndex):
             curGameState = gameState.generateSuccessor(agentIndex, legal_action)
             v, a = self.minimax_search(curGameState, next_agent_index, next_depth)
-            if v > max:
-                max = v
+            if v > max_val:
+                max_val = v
                 action = legal_action
-        return max, action
+        return max_val, action
 
     def min_value(self, gameState: GameState, agentIndex: int, depth: int):
-        min = 1e9
+        min_val = 1e9
         action = Directions.STOP
 
         if agentIndex == gameState.getNumAgents() - 1:
@@ -227,14 +227,17 @@ class MinimaxAgent(MultiAgentSearchAgent):
         else:
             next_agent_index = agentIndex + 1
             next_depth = depth
-            
+
         for legal_action in gameState.getLegalActions(agentIndex):
             curGameState = gameState.generateSuccessor(agentIndex, legal_action)
             v, a = self.minimax_search(curGameState, next_agent_index, next_depth)
-            if v < min:
-                min = v
+            if v < min_val:
+                min_val = v
                 action = legal_action
-        return min, action
+        return min_val, action
+
+
+import math
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -247,7 +250,62 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        value, action = self.alpha_beta_search(gameState, 0, self.depth, -1e9, 1e9)
+        return action
+
+    def alpha_beta_search(
+        self, gameState: GameState, agentIndex: int, depth: int, alpha, beta
+    ):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState), Directions.STOP
+        elif agentIndex == 0:  # pacman
+            return self.max_value(gameState, agentIndex, depth, alpha, beta)
+        else:  # ghost
+            return self.min_value(gameState, agentIndex, depth, alpha, beta)
+
+    def max_value(self, gameState: GameState, agentIndex: int, depth: int, alpha, beta):
+        max_val = -1e9
+        action = Directions.STOP
+
+        next_agent_index = agentIndex + 1
+        next_depth = depth
+        for legal_action in gameState.getLegalActions(agentIndex):
+            curGameState = gameState.generateSuccessor(agentIndex, legal_action)
+            val, a = self.alpha_beta_search(
+                curGameState, next_agent_index, next_depth, alpha, beta
+            )
+            if val > max_val:
+                max_val = val
+                action = legal_action
+                alpha = max(alpha, max_val)
+            if max_val > beta:
+                return max_val, action
+        return max_val, action
+
+    def min_value(self, gameState: GameState, agentIndex: int, depth: int, alpha, beta):
+        min_val = 1e9
+        action = Directions.STOP
+
+        if agentIndex == gameState.getNumAgents() - 1:
+            # last ghost
+            next_agent_index = 0
+            next_depth = depth - 1
+        else:
+            next_agent_index = agentIndex + 1
+            next_depth = depth
+
+        for legal_action in gameState.getLegalActions(agentIndex):
+            curGameState = gameState.generateSuccessor(agentIndex, legal_action)
+            val, a = self.alpha_beta_search(
+                curGameState, next_agent_index, next_depth, alpha, beta
+            )
+            if val < min_val:
+                min_val = val
+                action = legal_action
+                beta = min(beta, min_val)
+            if min_val < alpha:
+                return min_val, action
+        return min_val, action
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
