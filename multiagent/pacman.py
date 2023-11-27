@@ -861,12 +861,11 @@ if __name__ == "__main__":
     # sys.argv = [
     #     "pacman.py",
     #     "-p",
-    #     "ReflexAgent",
+    #     "MinimaxAgent",
     #     "-l",
-    #     "testClassic",
-    #     # "-g",
-    #     # "DirectionalGhost",
-    #     "-f",
+    #     "minimaxClassic",
+    #     "-a",
+    #     "depth=4"
     # ]
     args = readCommand(sys.argv[1:])  # Get game components based on input
 

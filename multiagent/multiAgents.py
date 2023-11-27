@@ -81,12 +81,12 @@ class ReflexAgent(Agent):
             mdis = manhattanDistance(newPos, ghostState.getPosition())
             scared_time = ghostState.scaredTimer
             if scared_time > 0:
-                nearest_scared_ghost_dis = min(nearest_scared_ghost_dis, mdis) 
+                nearest_scared_ghost_dis = min(nearest_scared_ghost_dis, mdis)
                 # + 1 / (nearest_scared_ghost_dis + 1)
             else:
                 nearset_normal_ghost_dis = min(nearset_normal_ghost_dis, mdis)
-        
-        if nearset_normal_ghost_dis <= 1: # 紧急避险
+
+        if nearset_normal_ghost_dis <= 1:  # 紧急避险
             return -100
 
         nearest_food_dis = 1e9
@@ -94,10 +94,13 @@ class ReflexAgent(Agent):
         for food in foods:
             mdis = manhattanDistance(newPos, food)
             nearest_food_dis = min(nearest_food_dis, mdis)
-            
+
         stateScore = successorGameState.getScore()
-        
-        return stateScore + 1 / (nearest_food_dis + 1) + 1 / (nearest_scared_ghost_dis + 1)
+
+        return (
+            stateScore + 1 / (nearest_food_dis + 1) + 1 / (nearest_scared_ghost_dis + 1)
+        )
+
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -131,12 +134,17 @@ class MultiAgentSearchAgent(Agent):
         self.depth = int(depth)
 
 
+from pacman import GameState
+from game import AgentState
+from game import Grid
+
+
 class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
     """
 
-    def getAction(self, gameState):
+    def getAction(self, gameState: GameState):
         """
         Returns the minimax action from the current gameState using self.depth
         and self.evaluationFunction.
@@ -158,9 +166,75 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         gameState.isLose():
         Returns whether or not the game state is a losing state
+
+        pacman_state: AgentState = gameState.getPacmanState()
+        # pacman_state.getPosition()
+        # pacman_state.getDirection()
+
+        pacman_legal_actions: list[str] = gameState.getLegalPacmanActions()
+        pacman_successor: GameState = gameState.generatePacmanSuccessor(
+            pacman_legal_actions[0]
+        )
+
+        # successor = gameState.generateSuccessor(0, legal_actions[0])
+        num_agents: int = gameState.getNumAgents()
+        ghost_states: list[AgentState] = gameState.getGhostStates()
+        # .getGhostState(agentIndex)
+        # ghost_states[0].getPosition()
+        # ghost_states[0].getDirection()
+
+        capsules: list[tuple] = gameState.getCapsules()
+        food_grid: Grid = gameState.getFood()  # if food_grid[x][y] == True: ...
+        walls_grid: Grid = gameState.getWalls()  # if walls_grid[x][y] == True: ...
+        # .hasFood(x, y) .hasWall(x, y)
+        # .isWin(), .isLose()
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        value, action = self.minimax_search(gameState, 0, self.depth)
+        return action
+
+    def minimax_search(self, gameState: GameState, agentIndex: int, depth: int):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState), Directions.STOP
+        elif agentIndex == 0:  # pacman
+            return self.max_value(gameState, agentIndex, depth)
+        else:  # ghost
+            return self.min_value(gameState, agentIndex, depth)
+
+    def max_value(self, gameState: GameState, agentIndex: int, depth: int):
+        max = -1e9
+        action = Directions.STOP
+
+        next_agent_index = agentIndex + 1
+        next_depth = depth
+        for legal_action in gameState.getLegalActions(agentIndex):
+            curGameState = gameState.generateSuccessor(agentIndex, legal_action)
+            v, a = self.minimax_search(curGameState, next_agent_index, next_depth)
+            if v > max:
+                max = v
+                action = legal_action
+        return max, action
+
+    def min_value(self, gameState: GameState, agentIndex: int, depth: int):
+        min = 1e9
+        action = Directions.STOP
+
+        if agentIndex == gameState.getNumAgents() - 1:
+            # last ghost
+            next_agent_index = 0
+            next_depth = depth - 1
+        else:
+            next_agent_index = agentIndex + 1
+            next_depth = depth
+            
+        for legal_action in gameState.getLegalActions(agentIndex):
+            curGameState = gameState.generateSuccessor(agentIndex, legal_action)
+            v, a = self.minimax_search(curGameState, next_agent_index, next_depth)
+            if v < min:
+                min = v
+                action = legal_action
+        return min, action
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
