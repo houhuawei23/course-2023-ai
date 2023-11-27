@@ -210,9 +210,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
         next_depth = depth
         for legal_action in gameState.getLegalActions(agentIndex):
             curGameState = gameState.generateSuccessor(agentIndex, legal_action)
-            v, a = self.minimax_search(curGameState, next_agent_index, next_depth)
-            if v > max_val:
-                max_val = v
+            val, a = self.minimax_search(curGameState, next_agent_index, next_depth)
+            if val > max_val:
+                max_val = val
                 action = legal_action
         return max_val, action
 
@@ -230,14 +230,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         for legal_action in gameState.getLegalActions(agentIndex):
             curGameState = gameState.generateSuccessor(agentIndex, legal_action)
-            v, a = self.minimax_search(curGameState, next_agent_index, next_depth)
-            if v < min_val:
-                min_val = v
+            val, a = self.minimax_search(curGameState, next_agent_index, next_depth)
+            if val < min_val:
+                min_val = val
                 action = legal_action
         return min_val, action
-
-
-import math
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -321,7 +318,49 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        value, action = self.expectimax_search(gameState, 0, self.depth)
+        return action
+
+    def expectimax_search(self, gameState: GameState, agentIndex: int, depth: int):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState), Directions.STOP
+        elif agentIndex == 0:  # pacman
+            return self.max_value(gameState, agentIndex, depth)
+        else:  # ghost
+            return self.expect_value(gameState, agentIndex, depth)
+
+    def max_value(self, gameState: GameState, agentIndex: int, depth: int):
+        max_val = -1e9
+        action = Directions.STOP
+
+        next_agent_index = agentIndex + 1
+        next_depth = depth
+        for legal_action in gameState.getLegalActions(agentIndex):
+            curGameState = gameState.generateSuccessor(agentIndex, legal_action)
+            val, a = self.expectimax_search(curGameState, next_agent_index, next_depth)
+            if val > max_val:
+                max_val = val
+                action = legal_action
+        return max_val, action
+
+    def expect_value(self, gameState: GameState, agentIndex: int, depth: int):
+        expect_val = 0
+        action = Directions.STOP
+
+        if agentIndex == gameState.getNumAgents() - 1:
+            # last ghost
+            next_agent_index = 0
+            next_depth = depth - 1
+        else:
+            next_agent_index = agentIndex + 1
+            next_depth = depth
+        legal_actions = gameState.getLegalActions(agentIndex)
+        for legal_action in legal_actions:
+            curGameState = gameState.generateSuccessor(agentIndex, legal_action)
+            val, a = self.expectimax_search(curGameState, next_agent_index, next_depth)
+            expect_val += val
+        expect_val /= len(legal_actions)
+        return expect_val, action # action??
 
 
 def betterEvaluationFunction(currentGameState):
